@@ -3,86 +3,144 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Laporan Bungkus Kerupuk</title>
+    <title>Laporan Kerupuk Minas</title>
     <link rel="manifest" href="manifest.json">
     <style>
-        body { font-family: sans-serif; margin: 0; padding: 20px; background: #f4f4f4; }
-        .container { max-width: 500px; margin: auto; background: white; padding: 20px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
-        h2 { text-align: center; color: #333; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; padding: 15px; background: #f0f2f5; color: #333; }
+        .container { max-width: 500px; margin: auto; background: white; padding: 20px; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+        h2 { text-align: center; color: #007bff; margin-bottom: 20px; }
         
-        /* Tab Styles */
-        .tabs { display: flex; cursor: pointer; margin-bottom: 20px; border-bottom: 2px solid #ddd; }
-        .tab { flex: 1; text-align: center; padding: 10px; font-weight: bold; background: #eee; }
-        .tab.active { background: #007bff; color: white; border-bottom: 2px solid #0056b3; }
+        .form-group { background: #f8f9fa; padding: 15px; border-radius: 10px; margin-bottom: 15px; border-left: 5px solid #007bff; }
+        label { font-weight: bold; display: block; margin-bottom: 5px; font-size: 14px; }
         
-        .content { display: none; }
-        .content.active { display: block; }
+        input { width: 100%; padding: 12px; margin-bottom: 10px; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; font-size: 16px; }
+        
+        .total-box { background: #e7f3ff; padding: 15px; border-radius: 10px; text-align: center; margin-bottom: 20px; }
+        .total-box span { font-size: 20px; font-weight: bold; color: #007bff; }
 
-        input, select, button { width: 100%; padding: 10px; margin: 10px 0; border: 1px solid #ccc; border-radius: 5px; box-sizing: border-box; }
-        button { cursor: pointer; font-weight: bold; border: none; }
+        .btn-group { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        button { padding: 12px; border-radius: 8px; border: none; font-weight: bold; cursor: pointer; font-size: 14px; transition: 0.3s; }
+        .btn-save { background: #007bff; color: white; grid-column: span 2; margin-bottom: 5px; }
         .btn-wa { background: #25d366; color: white; }
-        .btn-email { background: #007bff; color: white; }
-        
-        .result { background: #e9ecef; padding: 15px; border-radius: 5px; margin-top: 10px; }
+        .btn-email { background: #dc3545; color: white; }
+        button:active { transform: scale(0.98); }
+
+        /* Style History */
+        .history-section { margin-top: 30px; }
+        .history-title { font-weight: bold; border-bottom: 2px solid #ddd; padding-bottom: 5px; margin-bottom: 10px; }
+        .history-item { background: white; padding: 12px; border-radius: 8px; margin-bottom: 10px; border: 1px solid #eee; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+        .history-date { font-size: 12px; color: #666; font-weight: bold; }
+        .history-detail { font-size: 14px; margin-top: 5px; line-height: 1.5; }
+        .btn-clear { background: none; color: #ff4d4d; font-size: 12px; text-decoration: underline; padding: 0; width: auto; }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <h2>Laporan Kerja Harian</h2>
+    <h2>Laporan Harian</h2>
     
-    <div class="tabs">
-        <div class="tab active" onclick="openTab(event, 'YUGA')">MAMAH YUGA</div>
-        <div class="tab" onclick="openTab(event, 'EMPUT')">MAMAH EMPUT</div>
-    </div>
-
-    <label>Pilih Tanggal Laporan:</label>
+    <label>Tanggal Kerja:</label>
     <input type="date" id="tgl_laporan">
-    
-    <label>Jumlah Bungkus (Pax):</label>
-    <input type="number" id="jumlah_pax" placeholder="Contoh: 100" oninput="hitung()">
 
-    <div class="result">
-        <strong>Harga per Pax:</strong> Rp500<br>
-        <strong>Total Pendapatan:</strong> <span id="total_harga">Rp0</span>
+    <div class="form-group">
+        <label>MAMAH YUGA (Pax)</label>
+        <input type="number" id="pax_yuga" placeholder="0" oninput="hitungTotal()">
     </div>
 
-    <hr>
-    <button class="btn-wa" onclick="kirimKe('wa')">Kirim via WhatsApp</button>
-    <button class="btn-email" onclick="kirimKe('email')">Kirim via Email</button>
+    <div class="form-group">
+        <label>MAMAH EMPUT (Pax)</label>
+        <input type="number" id="pax_emput" placeholder="0" oninput="hitungTotal()">
+    </div>
+
+    <div class="total-box">
+        Total Pendapatan:<br>
+        <span id="display_total">Rp0</span>
+    </div>
+
+    <div class="btn-group">
+        <button class="btn-save" onclick="simpanLaporan()">Simpan ke Histori</button>
+        <button class="btn-wa" onclick="kirimKe('wa')">WA Laporan</button>
+        <button class="btn-email" onclick="kirimKe('email')">Email Laporan</button>
+    </div>
+
+    <div class="history-section">
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+            <span class="history-title">History Laporan</span>
+            <button class="btn-clear" onclick="hapusHistory()">Hapus Semua</button>
+        </div>
+        <div id="history_list">
+            </div>
+    </div>
 </div>
 
 <script>
-    let currentTab = "MAMAH YUGA";
     const hargaPerPax = 500;
 
-    function openTab(evt, name) {
-        let i, tablinks;
-        tablinks = document.getElementsByClassName("tab");
-        for (i = 0; i < tablinks.length; i++) {
-            tablinks[i].className = tablinks[i].className.replace(" active", "");
-        }
-        evt.currentTarget.className += " active";
-        currentTab = "MAMAH " + name;
-        hitung();
+    // Set tanggal hari ini otomatis
+    document.getElementById('tgl_laporan').valueAsDate = new Date();
+
+    function hitungTotal() {
+        const yuga = parseInt(document.getElementById('pax_yuga').value) || 0;
+        const emput = parseInt(document.getElementById('pax_emput').value) || 0;
+        const totalDuit = (yuga + emput) * hargaPerPax;
+        document.getElementById('display_total').innerText = "Rp" + totalDuit.toLocaleString('id-ID');
+        return { yuga, emput, totalDuit };
     }
 
-    function hitung() {
-        const jml = document.getElementById('jumlah_pax').value || 0;
-        const total = jml * hargaPerPax;
-        document.getElementById('total_harga').innerText = "Rp" + total.toLocaleString('id-ID');
-        return {jml, total};
+    function simpanLaporan() {
+        const tgl = document.getElementById('tgl_laporan').value;
+        const data = hitungTotal();
+        
+        if (data.yuga === 0 && data.emput === 0) {
+            alert("Isi dulu jumlah pax-nya, Bro!");
+            return;
+        }
+
+        const laporanBaru = {
+            tgl: tgl.split('-').reverse().join('-'), // format dd-mm-yyyy
+            yuga: data.yuga,
+            emput: data.emput,
+            total: data.totalDuit
+        };
+
+        let history = JSON.parse(localStorage.getItem('histori_kerupuk')) || [];
+        history.unshift(laporanBaru); // Tambah ke paling atas
+        localStorage.setItem('histori_kerupuk', JSON.stringify(history));
+        
+        tampilkanHistory();
+        alert("Laporan kesimpen, Bro!");
+    }
+
+    function tampilkanHistory() {
+        const history = JSON.parse(localStorage.getItem('histori_kerupuk')) || [];
+        const container = document.getElementById('history_list');
+        container.innerHTML = '';
+
+        history.forEach(item => {
+            container.innerHTML += `
+                <div class="history-item">
+                    <div class="history-date">${item.tgl}</div>
+                    <div class="history-detail">
+                        Mamah Yuga: ${item.yuga} pax<br>
+                        Mamah Emput: ${item.emput} pax<br>
+                        <strong>Total: Rp${item.total.toLocaleString('id-ID')}</strong>
+                    </div>
+                </div>
+            `;
+        });
     }
 
     function formatPesan() {
-        const tgl = document.getElementById('tgl_laporan').value || "Tidak dipilih";
-        const data = hitung();
-        let teks = `*LAPORAN KERJA BUNGKUS KERUPUK*\n\n`;
-        teks += `Nama: ${currentTab}\n`;
-        teks += `Tanggal: ${tgl}\n`;
-        teks += `Jumlah: ${data.jml} pax\n`;
-        teks += `Total Duit: Rp${data.total.toLocaleString('id-ID')}\n`;
-        teks += `\nPokonya lunas ya!`;
+        const tgl = document.getElementById('tgl_laporan').value;
+        const data = hitungTotal();
+        let teks = `*LAPORAN KERJA KERUPUK*\n`;
+        teks += `Tanggal: ${tgl.split('-').reverse().join('-')}\n`;
+        teks += `--------------------------\n`;
+        teks += `Mamah Yuga: ${data.yuga} pax\n`;
+        teks += `Mamah Emput: ${data.emput} pax\n`;
+        teks += `--------------------------\n`;
+        teks += `*Total Pendapatan: Rp${data.totalDuit.toLocaleString('id-ID')}*\n\n`;
+        teks += `Pokonya mantap!`;
         return encodeURIComponent(teks);
     }
 
@@ -91,13 +149,26 @@
         if (platform === 'wa') {
             window.open(`https://wa.me/?text=${pesan}`, '_blank');
         } else {
-            const subject = encodeURIComponent(`Laporan Kerja - ${currentTab}`);
-            window.location.href = `mailto:?subject=${subject}&body=${pesan}`;
+            window.location.href = `mailto:?subject=Laporan Kerja Kerupuk&body=${pesan}`;
         }
     }
 
-    // Set tanggal hari ini otomatis
-    document.getElementById('tgl_laporan').valueAsDate = new Date();
+    function hapusHistory() {
+        if (confirm("Beneran mau hapus semua histori?")) {
+            localStorage.removeItem('histori_kerupuk');
+            tampilkanHistory();
+        }
+    }
+
+    // Load history pas buka aplikasi
+    tampilkanHistory();
+
+    // Registrasi Service Worker PWA
+    if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+            navigator.serviceWorker.register('./sw.js').catch(err => console.log('SW Gagal', err));
+        });
+    }
 </script>
 
 </body>
