@@ -3,17 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Laporan Kerupuk - Dark Mode</title>
+    <title>Laporan Kerupuk Minas - Pro</title>
     <link rel="manifest" href="manifest.json">
     <style>
-        /* Dark Mode Theme */
         body { font-family: 'Segoe UI', sans-serif; margin: 0; padding: 15px; background: #121212; color: #e0e0e0; }
         .container { max-width: 500px; margin: auto; background: #1e1e1e; padding: 20px; border-radius: 15px; box-shadow: 0 4px 20px rgba(0,0,0,0.5); }
         h2 { text-align: center; color: #bb86fc; margin-bottom: 20px; }
         
         .form-group { background: #2d2d2d; padding: 15px; border-radius: 10px; margin-bottom: 15px; border-left: 5px solid #bb86fc; }
         label { font-weight: bold; display: block; margin-bottom: 5px; font-size: 14px; color: #b0b0b0; }
-        
         input { width: 100%; padding: 12px; margin-bottom: 10px; border: 1px solid #333; border-radius: 8px; box-sizing: border-box; font-size: 16px; background: #252525; color: white; }
         
         .total-box { background: #3700b3; padding: 15px; border-radius: 10px; text-align: center; margin-bottom: 20px; color: white; }
@@ -22,24 +20,30 @@
         .btn-group { display: flex; flex-direction: column; gap: 10px; }
         button { padding: 14px; border-radius: 8px; border: none; font-weight: bold; cursor: pointer; font-size: 16px; transition: 0.3s; }
         .btn-wa { background: #03dac6; color: #000; }
-        .btn-save { background: #bb86fc; color: #000; }
-        button:active { transform: scale(0.98); }
+        .btn-save { background: #bb86fc; color: #000; font-size: 14px; padding: 10px; opacity: 0.8; }
+        
+        /* History Section */
+        .history-section { margin-top: 30px; border-top: 1px solid #333; padding-top: 20px; }
+        .filter-box { background: #2d2d2d; padding: 15px; border-radius: 10px; margin-bottom: 15px; }
+        
+        /* Recap Stats */
+        .recap-container { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px; }
+        .recap-card { background: #333; padding: 10px; border-radius: 8px; border-top: 3px solid #03dac6; text-align: center; }
+        .recap-name { font-size: 12px; font-weight: bold; color: #bb86fc; margin-bottom: 5px; }
+        .recap-val { font-size: 16px; font-weight: bold; color: #fff; }
+        .recap-sub { font-size: 11px; color: #03dac6; }
 
-        /* Style History */
-        .history-section { margin-top: 30px; border-top: 1px solid #333; pt-20px; }
-        .filter-box { background: #2d2d2d; padding: 10px; border-radius: 10px; margin-bottom: 15px; font-size: 13px; }
-        .history-title { font-weight: bold; color: #bb86fc; margin-bottom: 10px; display: block; }
         .history-item { background: #252525; padding: 12px; border-radius: 8px; margin-bottom: 10px; border: 1px solid #333; }
         .history-date { font-size: 12px; color: #03dac6; font-weight: bold; margin-bottom: 5px; }
         .history-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; font-size: 13px; }
-        .total-line { grid-column: span 2; border-top: 1px solid #444; margin-top: 5px; pt-5px; color: #ffb74d; font-weight: bold; }
+        .total-line { grid-column: span 2; border-top: 1px solid #444; margin-top: 5px; padding-top: 5px; color: #ffb74d; font-weight: bold; }
         .btn-clear { background: none; color: #cf6679; font-size: 12px; text-decoration: underline; padding: 0; width: auto; font-weight: normal; }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <h2>Laporan Harian</h2>
+    <h2>Laporan Kerja</h2>
     
     <label>Tanggal Kerja:</label>
     <input type="date" id="tgl_laporan">
@@ -60,21 +64,34 @@
     </div>
 
     <div class="btn-group">
-        <button class="btn-wa" onclick="kirimKeWA()">Kirim via WhatsApp</button>
-        <button class="btn-save" onclick="simpanLaporan()">Simpan ke Histori</button>
+        <button class="btn-wa" onclick="prosesLaporan()">Kirim WA & Simpan</button>
+        <button class="btn-save" onclick="simpanLaporan(true)">Hanya Simpan Histori</button>
     </div>
 
     <div class="history-section">
-        <span class="history-title">Filter Histori</span>
         <div class="filter-box">
-            <label>Dari:</label>
-            <input type="date" id="filter_dari" onchange="tampilkanHistory()">
-            <label>Sampai:</label>
-            <input type="date" id="filter_sampai" onchange="tampilkanHistory()">
+            <label style="color: #bb86fc;">Rekap Berdasarkan Rentang:</label>
+            <div style="display: flex; gap: 5px; margin-top: 5px;">
+                <input type="date" id="filter_dari" onchange="tampilkanHistory()">
+                <input type="date" id="filter_sampai" onchange="tampilkanHistory()">
+            </div>
         </div>
 
-        <div style="display: flex; justify-content: space-between; align-items: center;">
-            <span class="history-title">History List</span>
+        <div class="recap-container" id="recap_display">
+            <div class="recap-card">
+                <div class="recap-name">MAMAH YUGA</div>
+                <div class="recap-val" id="total_pax_yuga">0</div>
+                <div class="recap-sub" id="total_duit_yuga">Rp0</div>
+            </div>
+            <div class="recap-card">
+                <div class="recap-name">MAMAH EMPUT</div>
+                <div class="recap-val" id="total_pax_emput">0</div>
+                <div class="recap-sub" id="total_duit_emput">Rp0</div>
+            </div>
+        </div>
+
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+            <span style="font-weight: bold;">List History:</span>
             <button class="btn-clear" onclick="hapusHistory()">Hapus Semua</button>
         </div>
         <div id="history_list"></div>
@@ -83,8 +100,6 @@
 
 <script>
     const hargaPerPax = 500;
-
-    // Auto set tanggal hari ini
     document.getElementById('tgl_laporan').valueAsDate = new Date();
 
     function hitungTotal() {
@@ -93,22 +108,38 @@
         const duitYuga = yuga * hargaPerPax;
         const duitEmput = emput * hargaPerPax;
         const totalDuit = duitYuga + duitEmput;
-        
         document.getElementById('display_total').innerText = "Rp" + totalDuit.toLocaleString('id-ID');
         return { yuga, emput, duitYuga, duitEmput, totalDuit };
     }
 
-    function simpanLaporan() {
+    // Fungsi Gabungan: Kirim WA terus simpan
+    function prosesLaporan() {
+        const data = hitungTotal();
+        if (data.yuga === 0 && data.emput === 0) {
+            alert("Isi dulu jumlah bungkusnya, Bro!");
+            return;
+        }
+        
+        // Simpan ke histori dulu
+        simpanLaporan(false);
+        
+        // Kirim WA
+        const tgl = document.getElementById('tgl_laporan').value.split('-').reverse().join('-');
+        let teks = `Tanggal: ${tgl}\n`;
+        teks += `--------------------------\n`;
+        teks += `Mamah Yuga: ${data.yuga} pax\n`;
+        teks += `Mamah Emput: ${data.emput} pax\n`;
+        teks += `--------------------------`;
+        
+        window.open(`https://wa.me/?text=${encodeURIComponent(teks)}`, '_blank');
+    }
+
+    function simpanLaporan(pakeAlert) {
         const tglInput = document.getElementById('tgl_laporan').value;
         const data = hitungTotal();
         
-        if (data.yuga === 0 && data.emput === 0) {
-            alert("Isi dulu, Bro!");
-            return;
-        }
-
         const laporanBaru = {
-            tglRaw: tglInput, // Buat filter
+            tglRaw: tglInput,
             tgl: tglInput.split('-').reverse().join('-'),
             yuga: data.yuga,
             emput: data.emput,
@@ -122,7 +153,7 @@
         localStorage.setItem('histori_kerupuk', JSON.stringify(history));
         
         tampilkanHistory();
-        alert("Sip, masuk histori!");
+        if(pakeAlert) alert("Kesimpen di histori!");
     }
 
     function tampilkanHistory() {
@@ -130,46 +161,45 @@
         const fDari = document.getElementById('filter_dari').value;
         const fSampai = document.getElementById('filter_sampai').value;
         const container = document.getElementById('history_list');
+        
+        let totalYugaPax = 0, totalYugaDuit = 0;
+        let totalEmputPax = 0, totalEmputDuit = 0;
+        
         container.innerHTML = '';
 
-        history.filter(item => {
-            if (!fDari || !fSampai) return true;
-            return item.tglRaw >= fDari && item.tglRaw <= fSampai;
-        }).forEach(item => {
-            container.innerHTML += `
-                <div class="history-item">
-                    <div class="history-date">${item.tgl}</div>
-                    <div class="history-grid">
-                        <div>Mamah Yuga:<br>${item.yuga} pax (Rp${item.duitYuga.toLocaleString('id-ID')})</div>
-                        <div>Mamah Emput:<br>${item.emput} pax (Rp${item.duitEmput.toLocaleString('id-ID')})</div>
-                        <div class="total-line">Total: Rp${item.total.toLocaleString('id-ID')}</div>
+        history.forEach(item => {
+            const dalamRentang = (!fDari || !fSampai) || (item.tglRaw >= fDari && item.tglRaw <= fSampai);
+            
+            if (dalamRentang) {
+                // Tambah ke hitungan rekap
+                totalYugaPax += item.yuga;
+                totalYugaDuit += item.duitYuga;
+                totalEmputPax += item.emput;
+                totalEmputDuit += item.duitEmput;
+
+                // Tampil di list
+                container.innerHTML += `
+                    <div class="history-item">
+                        <div class="history-date">${item.tgl}</div>
+                        <div class="history-grid">
+                            <div>MAMAH YUGA:<br>${item.yuga} pax</div>
+                            <div>MAMAH EMPUT:<br>${item.emput} pax</div>
+                            <div class="total-line">Total: Rp${item.total.toLocaleString('id-ID')}</div>
+                        </div>
                     </div>
-                </div>
-            `;
+                `;
+            }
         });
-    }
 
-    function kirimKeWA() {
-        const tglInput = document.getElementById('tgl_laporan').value;
-        const tglFormatted = tglInput.split('-').reverse().join('-');
-        const data = hitungTotal();
-        
-        if (data.yuga === 0 && data.emput === 0) {
-            alert("Isi dulu datanya!");
-            return;
-        }
-
-        let teks = `Tanggal: ${tglFormatted}\n`;
-        teks += `--------------------------\n`;
-        teks += `Mamah Yuga: ${data.yuga} pax\n`;
-        teks += `Mamah Emput: ${data.emput} pax\n`;
-        teks += `--------------------------`;
-        
-        window.open(`https://wa.me/?text=${encodeURIComponent(teks)}`, '_blank');
+        // Update tampilan rekap di atas
+        document.getElementById('total_pax_yuga').innerText = totalYugaPax + " Pax";
+        document.getElementById('total_duit_yuga').innerText = "Rp" + totalYugaDuit.toLocaleString('id-ID');
+        document.getElementById('total_pax_emput').innerText = totalEmputPax + " Pax";
+        document.getElementById('total_duit_emput').innerText = "Rp" + totalEmputDuit.toLocaleString('id-ID');
     }
 
     function hapusHistory() {
-        if (confirm("Hapus semua histori nih?")) {
+        if (confirm("Beneran mau bersihin semua histori?")) {
             localStorage.removeItem('histori_kerupuk');
             tampilkanHistory();
         }
@@ -179,7 +209,7 @@
 
     if ('serviceWorker' in navigator) {
         window.addEventListener('load', () => {
-            navigator.serviceWorker.register('./sw.js').catch(err => console.log('SW Gagal', err));
+            navigator.serviceWorker.register('./sw.js').catch(err => console.log('SW Error', err));
         });
     }
 </script>
