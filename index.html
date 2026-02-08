@@ -3,64 +3,70 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Laporan Kerupuk Minas - Pro</title>
+    <title>Laporan Kerja Kerupuk</title>
     <link rel="manifest" href="manifest.json">
     <style>
         body { font-family: 'Segoe UI', sans-serif; margin: 0; padding: 15px; background: #121212; color: #e0e0e0; }
         .container { max-width: 500px; margin: auto; background: #1e1e1e; padding: 20px; border-radius: 15px; box-shadow: 0 4px 20px rgba(0,0,0,0.5); }
-        h2 { text-align: center; color: #bb86fc; margin-bottom: 20px; }
+        h2 { text-align: center; color: #bb86fc; margin-bottom: 20px; text-transform: uppercase; letter-spacing: 1px; }
         
         .form-group { background: #2d2d2d; padding: 15px; border-radius: 10px; margin-bottom: 15px; border-left: 5px solid #bb86fc; }
         label { font-weight: bold; display: block; margin-bottom: 5px; font-size: 14px; color: #b0b0b0; }
         input { width: 100%; padding: 12px; margin-bottom: 10px; border: 1px solid #333; border-radius: 8px; box-sizing: border-box; font-size: 16px; background: #252525; color: white; }
         
-        .total-box { background: #3700b3; padding: 15px; border-radius: 10px; text-align: center; margin-bottom: 20px; color: white; }
-        .total-box span { font-size: 20px; font-weight: bold; }
+        .income-split { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px; }
+        .income-card { background: #3700b3; padding: 15px; border-radius: 10px; text-align: center; border-bottom: 3px solid #03dac6; }
+        .income-card small { font-size: 11px; color: #bb86fc; font-weight: bold; text-transform: uppercase; }
+        .income-card div { font-size: 18px; font-weight: bold; margin-top: 5px; color: #fff; }
 
         .btn-group { display: flex; flex-direction: column; gap: 10px; }
-        button { padding: 14px; border-radius: 8px; border: none; font-weight: bold; cursor: pointer; font-size: 16px; transition: 0.3s; }
+        button { padding: 15px; border-radius: 8px; border: none; font-weight: bold; cursor: pointer; font-size: 16px; transition: 0.3s; }
         .btn-wa { background: #03dac6; color: #000; }
-        .btn-save { background: #bb86fc; color: #000; font-size: 14px; padding: 10px; opacity: 0.8; }
+        .btn-save { background: #bb86fc; color: #000; font-size: 14px; opacity: 0.8; }
+        .btn-wa-history { background: #25d366; color: white; margin-top: 15px; width: 100%; }
         
         .history-section { margin-top: 30px; border-top: 1px solid #333; padding-top: 20px; }
-        .filter-box { background: #2d2d2d; padding: 15px; border-radius: 10px; margin-bottom: 15px; }
+        .filter-box { background: #2d2d2d; padding: 15px; border-radius: 10px; margin-bottom: 20px; }
         
         .recap-container { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px; }
-        .recap-card { background: #333; padding: 10px; border-radius: 8px; border-top: 3px solid #03dac6; text-align: center; }
-        .recap-name { font-size: 12px; font-weight: bold; color: #bb86fc; margin-bottom: 5px; }
+        .recap-card { background: #333; padding: 12px; border-radius: 8px; text-align: center; border: 1px solid #444; }
+        .recap-name { font-size: 11px; font-weight: bold; color: #bb86fc; margin-bottom: 5px; }
         .recap-val { font-size: 16px; font-weight: bold; color: #fff; }
-        .recap-sub { font-size: 11px; color: #03dac6; }
+        .recap-sub { font-size: 12px; color: #03dac6; font-weight: bold; margin-top: 3px; }
 
         .history-item { background: #252525; padding: 12px; border-radius: 8px; margin-bottom: 10px; border: 1px solid #333; }
         .history-date { font-size: 12px; color: #03dac6; font-weight: bold; margin-bottom: 8px; display: block; }
         .history-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; font-size: 13px; }
-        .detail-pax { color: #fff; font-weight: 500; }
-        .detail-duit { color: #03dac6; font-size: 11px; display: block; margin-top: 2px; }
-        .total-line { grid-column: span 2; border-top: 1px solid #444; margin-top: 8px; padding-top: 8px; color: #ffb74d; font-weight: bold; text-align: right; }
-        .btn-clear { background: none; color: #cf6679; font-size: 12px; text-decoration: underline; padding: 0; width: auto; font-weight: normal; }
+        .btn-clear { background: none; color: #cf6679; font-size: 12px; text-decoration: underline; padding: 0; width: auto; font-weight: normal; margin-top: 20px; }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <h2>Laporan Kerja</h2>
+    <h2>Laporan Harian</h2>
     
-    <label>Tanggal Kerja:</label>
+    <label>Pilih Tanggal:</label>
     <input type="date" id="tgl_laporan">
 
     <div class="form-group">
-        <label>MAMAH YUGA (Pax)</label>
-        <input type="number" id="pax_yuga" placeholder="0" oninput="hitungTotal()">
+        <label>MAMAH YUGA</label>
+        <input type="number" id="pax_yuga" placeholder="Jumlah Pax" oninput="hitung()">
     </div>
 
     <div class="form-group">
-        <label>MAMAH EMPUT (Pax)</label>
-        <input type="number" id="pax_emput" placeholder="0" oninput="hitungTotal()">
+        <label>MAMAH EMPUT</label>
+        <input type="number" id="pax_emput" placeholder="Jumlah Pax" oninput="hitung()">
     </div>
 
-    <div class="total-box">
-        Total Pendapatan:<br>
-        <span id="display_total">Rp0</span>
+    <div class="income-split">
+        <div class="income-card">
+            <small>Pendapatan Yuga</small>
+            <div id="disp_yuga">Rp0</div>
+        </div>
+        <div class="income-card">
+            <small>Pendapatan Emput</small>
+            <div id="disp_emput">Rp0</div>
+        </div>
     </div>
 
     <div class="btn-group">
@@ -70,31 +76,33 @@
 
     <div class="history-section">
         <div class="filter-box">
-            <label style="color: #bb86fc;">Rekap Rentang Tanggal:</label>
-            <div style="display: flex; gap: 5px; margin-top: 5px;">
-                <input type="date" id="filter_dari" onchange="tampilkanHistory()">
-                <input type="date" id="filter_sampai" onchange="tampilkanHistory()">
+            <label style="color: #bb86fc;">Rentang Rekap Histori:</label>
+            <div style="display: flex; gap: 5px; margin-top: 8px;">
+                <input type="date" id="f_dari" onchange="tampilkanHistory()">
+                <input type="date" id="f_sampai" onchange="tampilkanHistory()">
             </div>
         </div>
 
         <div class="recap-container">
             <div class="recap-card">
-                <div class="recap-name">MAMAH YUGA</div>
-                <div class="recap-val" id="total_pax_yuga">0</div>
-                <div class="recap-sub" id="total_duit_yuga">Rp0</div>
+                <div class="recap-name">TOTAL YUGA</div>
+                <div id="rec_pax_yuga" class="recap-val">0</div>
+                <div id="rec_duit_yuga" class="recap-sub">Rp0</div>
             </div>
             <div class="recap-card">
-                <div class="recap-name">MAMAH EMPUT</div>
-                <div class="recap-val" id="total_pax_emput">0</div>
-                <div class="recap-sub" id="total_duit_emput">Rp0</div>
+                <div class="recap-name">TOTAL EMPUT</div>
+                <div id="rec_pax_emput" class="recap-val">0</div>
+                <div id="rec_duit_emput" class="recap-sub">Rp0</div>
             </div>
         </div>
 
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
-            <span style="font-weight: bold;">List History Detail:</span>
-            <button class="btn-clear" onclick="hapusHistory()">Hapus Semua</button>
-        </div>
         <div id="history_list"></div>
+        
+        <button class="btn-wa-history" onclick="kirimHistoriWA()">Kirim Rekap Histori ke WA</button>
+        
+        <div style="text-align: center;">
+            <button class="btn-clear" onclick="hapusHistory()">Hapus Semua Histori</button>
+        </div>
     </div>
 </div>
 
@@ -102,119 +110,81 @@
     const hargaPerPax = 500;
     document.getElementById('tgl_laporan').valueAsDate = new Date();
 
-    function hitungTotal() {
-        const yuga = parseInt(document.getElementById('pax_yuga').value) || 0;
-        const emput = parseInt(document.getElementById('pax_emput').value) || 0;
-        const duitYuga = yuga * hargaPerPax;
-        const duitEmput = emput * hargaPerPax;
-        const totalDuit = duitYuga + duitEmput;
-        document.getElementById('display_total').innerText = "Rp" + totalDuit.toLocaleString('id-ID');
-        return { yuga, emput, duitYuga, duitEmput, totalDuit };
+    function hitung() {
+        const y = parseInt(document.getElementById('pax_yuga').value) || 0;
+        const e = parseInt(document.getElementById('pax_emput').value) || 0;
+        const dy = y * hargaPerPax;
+        const de = e * hargaPerPax;
+        document.getElementById('disp_yuga').innerText = "Rp" + dy.toLocaleString('id-ID');
+        document.getElementById('disp_emput').innerText = "Rp" + de.toLocaleString('id-ID');
+        return { y, e, dy, de };
     }
 
     function prosesLaporan() {
-        const data = hitungTotal();
-        if (data.yuga === 0 && data.emput === 0) {
-            alert("Isi dulu jumlah bungkusnya, Bro!");
-            return;
-        }
-        
+        const d = hitung();
+        if (d.y === 0 && d.e === 0) return alert("Isi dulu, Bro!");
         simpanLaporan(false);
-        
         const tgl = document.getElementById('tgl_laporan').value.split('-').reverse().join('-');
-        let teks = `Tanggal: ${tgl}\n`;
-        teks += `--------------------------\n`;
-        teks += `Mamah Yuga: ${data.yuga}\n`;
-        teks += `Mamah Emput: ${data.emput}\n`;
-        teks += `--------------------------`;
-        
+        let teks = `Tanggal: ${tgl}\n--------------------------\nMamah Yuga: ${d.y}\nMamah Emput: ${d.e}\n--------------------------`;
         window.open(`https://wa.me/?text=${encodeURIComponent(teks)}`, '_blank');
     }
 
-    function simpanLaporan(pakeAlert) {
-        const tglInput = document.getElementById('tgl_laporan').value;
-        const data = hitungTotal();
-        
-        const laporanBaru = {
-            tglRaw: tglInput,
-            tgl: tglInput.split('-').reverse().join('-'),
-            yuga: data.yuga,
-            emput: data.emput,
-            duitYuga: data.duitYuga,
-            duitEmput: data.duitEmput,
-            total: data.totalDuit
-        };
-
-        let history = JSON.parse(localStorage.getItem('histori_kerupuk')) || [];
-        history.unshift(laporanBaru);
-        localStorage.setItem('histori_kerupuk', JSON.stringify(history));
-        
+    function simpanLaporan(alertMode) {
+        const tgl = document.getElementById('tgl_laporan').value;
+        const d = hitung();
+        const item = { tglRaw: tgl, tgl: tgl.split('-').reverse().join('-'), y: d.y, e: d.e, dy: d.dy, de: d.de };
+        let hist = JSON.parse(localStorage.getItem('hist_k')) || [];
+        hist.unshift(item);
+        localStorage.setItem('hist_k', JSON.stringify(hist));
         tampilkanHistory();
-        if(pakeAlert) alert("Kesimpen di histori!");
+        if(alertMode) alert("Histori Tersimpan!");
     }
 
     function tampilkanHistory() {
-        const history = JSON.parse(localStorage.getItem('histori_kerupuk')) || [];
-        const fDari = document.getElementById('filter_dari').value;
-        const fSampai = document.getElementById('filter_sampai').value;
-        const container = document.getElementById('history_list');
+        const hist = JSON.parse(localStorage.getItem('hist_k')) || [];
+        const fD = document.getElementById('f_dari').value;
+        const fS = document.getElementById('f_sampai').value;
+        const list = document.getElementById('history_list');
+        let ty=0, tdy=0, te=0, tde=0;
         
-        let totalYugaPax = 0, totalYugaDuit = 0;
-        let totalEmputPax = 0, totalEmputDuit = 0;
-        
-        container.innerHTML = '';
-
-        history.forEach(item => {
-            const dalamRentang = (!fDari || !fSampai) || (item.tglRaw >= fDari && item.tglRaw <= fSampai);
-            
-            if (dalamRentang) {
-                totalYugaPax += item.yuga;
-                totalYugaDuit += item.duitYuga;
-                totalEmputPax += item.emput;
-                totalEmputDuit += item.duitEmput;
-
-                container.innerHTML += `
-                    <div class="history-item">
-                        <span class="history-date">${item.tgl}</span>
-                        <div class="history-grid">
-                            <div>
-                                <span style="color: #bb86fc;">MAMAH YUGA:</span><br>
-                                <span class="detail-pax">${item.yuga} pax</span>
-                                <span class="detail-duit">Rp${item.duitYuga.toLocaleString('id-ID')}</span>
-                            </div>
-                            <div>
-                                <span style="color: #bb86fc;">MAMAH EMPUT:</span><br>
-                                <span class="detail-pax">${item.emput} pax</span>
-                                <span class="detail-duit">Rp${item.duitEmput.toLocaleString('id-ID')}</span>
-                            </div>
-                            <div class="total-line">Total Hari Ini: Rp${item.total.toLocaleString('id-ID')}</div>
-                        </div>
+        list.innerHTML = '';
+        hist.forEach(i => {
+            if ((!fD || !fS) || (i.tglRaw >= fD && i.tglRaw <= fS)) {
+                ty+=i.y; tdy+=i.dy; te+=i.e; tde+=i.de;
+                list.innerHTML += `<div class="history-item">
+                    <span class="history-date">${i.tgl}</span>
+                    <div class="history-grid">
+                        <div>YUGA: ${i.y}<br><span style="color:#03dac6">Rp${i.dy.toLocaleString('id-ID')}</span></div>
+                        <div>EMPUT: ${i.e}<br><span style="color:#03dac6">Rp${i.de.toLocaleString('id-ID')}</span></div>
                     </div>
-                `;
+                </div>`;
             }
         });
-
-        document.getElementById('total_pax_yuga').innerText = totalYugaPax + " Pax";
-        document.getElementById('total_duit_yuga').innerText = "Rp" + totalYugaDuit.toLocaleString('id-ID');
-        document.getElementById('total_pax_emput').innerText = totalEmputPax + " Pax";
-        document.getElementById('total_duit_emput').innerText = "Rp" + totalEmputDuit.toLocaleString('id-ID');
+        document.getElementById('rec_pax_yuga').innerText = ty;
+        document.getElementById('rec_duit_yuga').innerText = "Rp" + tdy.toLocaleString('id-ID');
+        document.getElementById('rec_pax_emput').innerText = te;
+        document.getElementById('rec_duit_emput').innerText = "Rp" + tde.toLocaleString('id-ID');
     }
 
-    function hapusHistory() {
-        if (confirm("Beneran mau bersihin semua histori?")) {
-            localStorage.removeItem('histori_kerupuk');
-            tampilkanHistory();
-        }
+    function kirimHistoriWA() {
+        const fD = document.getElementById('f_dari').value.split('-').reverse().join('-');
+        const fS = document.getElementById('f_sampai').value.split('-').reverse().join('-');
+        const ty = document.getElementById('rec_pax_yuga').innerText;
+        const tdy = document.getElementById('rec_duit_yuga').innerText;
+        const te = document.getElementById('rec_pax_emput').innerText;
+        const tde = document.getElementById('rec_duit_emput').innerText;
+
+        let teks = `*REKAP LAPORAN KERUPUK*\n`;
+        teks += `Periode: ${fD || '?'} s/d ${fS || '?'}\n`;
+        teks += `--------------------------\n`;
+        teks += `*MAMAH YUGA*\nTotal: ${ty}\nUpah: ${tdy}\n\n`;
+        teks += `*MAMAH EMPUT*\nTotal: ${te}\nUpah: ${tde}\n`;
+        teks += `--------------------------`;
+        window.open(`https://wa.me/?text=${encodeURIComponent(teks)}`, '_blank');
     }
 
+    function hapusHistory() { if(confirm("Hapus semua histori?")) { localStorage.removeItem('hist_k'); tampilkanHistory(); } }
     tampilkanHistory();
-
-    if ('serviceWorker' in navigator) {
-        window.addEventListener('load', () => {
-            navigator.serviceWorker.register('./sw.js').catch(err => console.log('SW Error', err));
-        });
-    }
 </script>
-
 </body>
 </html>
