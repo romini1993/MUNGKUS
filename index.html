@@ -141,7 +141,12 @@
         if (d.y === 0 && d.e === 0) return alert("Isi data dulu!");
         simpanLaporan(false);
         const tgl = document.getElementById('tgl_laporan').value.split('-').reverse().join('-');
-        let teks = `Tanggal: ${tgl}\n--------------------------\nMamah Yuga: ${d.y}\nMamah Emput: ${d.e}\n--------------------------`;
+        
+        let teks = `Tanggal: ${tgl}\n--------------------------\n`;
+        if (d.y > 0) teks += `Mamah Yuga: ${d.y}\n`;
+        if (d.e > 0) teks += `Mamah Emput: ${d.e}\n`;
+        teks += `--------------------------`;
+        
         window.open(`https://wa.me/?text=${encodeURIComponent(teks)}`, '_blank');
     }
 
@@ -149,20 +154,14 @@
         const tgl = document.getElementById('tgl_laporan').value;
         const d = hitung();
         const item = { tglRaw: tgl, tgl: tgl.split('-').reverse().join('-'), hari: getNamaHari(tgl), y: d.y, e: d.e, dy: d.dy, de: d.de };
-        
         let hist = JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
-        
-        // Cari apa tanggal ini udah ada? Kalo ada, apus yang lama (supaya gak dobel pas update)
         hist = hist.filter(h => h.tglRaw !== tgl);
-        
         hist.push(item);
-        
-        // DISINI KUNCINYA: Urutin berdasarkan tglRaw (YYYY-MM-DD) biar rapi kalender
-        hist.sort((a, b) => a.tglRaw.localeCompare(b.tglRaw));
-        
+        // Selalu urutkan dari yang terbaru (descending) untuk penyimpanan
+        hist.sort((a, b) => b.tglRaw.localeCompare(a.tglRaw));
         localStorage.setItem(STORAGE_KEY, JSON.stringify(hist));
         tampilkanHistory();
-        if(alertMode) alert("Histori Tersimpan & Diurutkan!");
+        if(alertMode) alert("Histori Tersimpan!");
     }
 
     function tampilkanHistory() {
@@ -172,8 +171,8 @@
         const list = document.getElementById('history_list');
         let ty=0, tdy=0, te=0, tde=0;
         
-        // Pastiin urut sebelum tampil
-        hist.sort((a, b) => a.tglRaw.localeCompare(b.tglRaw));
+        // Urutkan Tanggal Terbaru di Atas
+        hist.sort((a, b) => b.tglRaw.localeCompare(a.tglRaw));
         
         list.innerHTML = '';
         hist.forEach(i => {
@@ -196,7 +195,7 @@
 
     function kirimHistoriWA() {
         let hist = JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
-        if (hist.length === 0) return alert("Gak ada data histori!");
+        if (hist.length === 0) return alert("Gak ada data!");
 
         const fD = document.getElementById('f_dari').value;
         const fS = document.getElementById('f_sampai').value;
@@ -209,27 +208,35 @@
             periodeTeks = `${fD.split('-').reverse().join('-')} s/d ${fS.split('-').reverse().join('-')}`;
         }
         
-        // Urutin dari tgl paling tua ke muda buat laporan
+        // Urutan WA tetap dari lama ke baru biar bos bacanya enak kayak urutan kalender
         filtered.sort((a, b) => a.tglRaw.localeCompare(b.tglRaw));
-
-        if (filtered.length === 0) return alert("Data kosong!");
 
         let ty=0, tdy=0, te=0, tde=0;
         let detYuga = "", detEmput = "";
 
         filtered.forEach(i => {
-            ty+=i.y; tdy+=i.dy; te+=i.e; tde+=i.de;
-            if(i.y > 0) detYuga += `${i.hari}, ${i.tgl} dapat ${i.y}\n`;
-            if(i.e > 0) detEmput += `${i.hari}, ${i.tgl} dapat ${i.e}\n`;
+            if(i.y > 0) {
+                ty+=i.y; tdy+=i.dy;
+                detYuga += `${i.hari}, ${i.tgl} dapat ${i.y}\n`;
+            }
+            if(i.e > 0) {
+                te+=i.e; tde+=i.de;
+                detEmput += `${i.hari}, ${i.tgl} dapat ${i.e}\n`;
+            }
         });
 
         let teks = `*REKAP LAPORAN*\n`;
         teks += `Periode: ${periodeTeks}\n`;
         teks += `--------------------------\n`;
-        teks += `*MAMAH YUGA*\n${detYuga}`;
-        teks += `Total: ${ty}\nUpah: Rp${tdy.toLocaleString('id-ID')}\n\n`;
-        teks += `*MAMAH EMPUT*\n${detEmput}`;
-        teks += `Total: ${te}\nUpah: Rp${tde.toLocaleString('id-ID')}\n`;
+        
+        if (ty > 0) {
+            teks += `*MAMAH YUGA*\n${detYuga}Total: ${ty}\nUpah: Rp${tdy.toLocaleString('id-ID')}\n\n`;
+        }
+        
+        if (te > 0) {
+            teks += `*MAMAH EMPUT*\n${detEmput}Total: ${te}\nUpah: Rp${tde.toLocaleString('id-ID')}\n`;
+        }
+        
         teks += `--------------------------`;
 
         window.open(`https://wa.me/?text=${encodeURIComponent(teks)}`, '_blank');
@@ -238,19 +245,10 @@
     function backupData() {
         const data = localStorage.getItem(STORAGE_KEY);
         if (!data || data === "[]") return alert("Gak ada data!");
-        
         const now = new Date();
-        const thn = now.getFullYear();
-        const bln = String(now.getMonth() + 1).padStart(2, '0');
-        const tgl = String(now.getDate()).padStart(2, '0');
-        const jam = String(now.getHours()).padStart(2, '0');
-        const min = String(now.getMinutes()).padStart(2, '0');
-        const det = String(now.getSeconds()).padStart(2, '0');
-        const formatDefault = `Laporan_${thn}${bln}${tgl}_${jam}${min}${det}`;
-
+        const formatDefault = `Laporan_${now.getFullYear()}${String(now.getMonth()+1).padStart(2,'0')}${String(now.getDate()).padStart(2,'0')}_${String(now.getHours()).padStart(2,'0')}${String(now.getMinutes()).padStart(2,'0')}${String(now.getSeconds()).padStart(2,'0')}`;
         const namaFile = prompt("Simpan backup dengan nama:", formatDefault);
         if (namaFile === null) return; 
-
         const blob = new Blob([data], { type: "application/json" });
         const url = URL.createObjectURL(blob);
         const a = document.createElement("a");
@@ -283,8 +281,6 @@
     }
 
     function hapusHistory() { if(confirm("Hapus semua?")) { localStorage.removeItem(STORAGE_KEY); tampilkanHistory(); } }
-    
-    // Panggil tampilkanHistory pas awal buka biar urut
     tampilkanHistory();
 </script>
 </body>
