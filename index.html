@@ -22,11 +22,9 @@
         .btn-wa { background: #03dac6; color: #000; }
         .btn-save { background: #bb86fc; color: #000; font-size: 14px; padding: 10px; opacity: 0.8; }
         
-        /* History Section */
         .history-section { margin-top: 30px; border-top: 1px solid #333; padding-top: 20px; }
         .filter-box { background: #2d2d2d; padding: 15px; border-radius: 10px; margin-bottom: 15px; }
         
-        /* Recap Stats */
         .recap-container { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px; }
         .recap-card { background: #333; padding: 10px; border-radius: 8px; border-top: 3px solid #03dac6; text-align: center; }
         .recap-name { font-size: 12px; font-weight: bold; color: #bb86fc; margin-bottom: 5px; }
@@ -34,9 +32,11 @@
         .recap-sub { font-size: 11px; color: #03dac6; }
 
         .history-item { background: #252525; padding: 12px; border-radius: 8px; margin-bottom: 10px; border: 1px solid #333; }
-        .history-date { font-size: 12px; color: #03dac6; font-weight: bold; margin-bottom: 5px; }
+        .history-date { font-size: 12px; color: #03dac6; font-weight: bold; margin-bottom: 8px; display: block; }
         .history-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; font-size: 13px; }
-        .total-line { grid-column: span 2; border-top: 1px solid #444; margin-top: 5px; padding-top: 5px; color: #ffb74d; font-weight: bold; }
+        .detail-pax { color: #fff; font-weight: 500; }
+        .detail-duit { color: #03dac6; font-size: 11px; display: block; margin-top: 2px; }
+        .total-line { grid-column: span 2; border-top: 1px solid #444; margin-top: 8px; padding-top: 8px; color: #ffb74d; font-weight: bold; text-align: right; }
         .btn-clear { background: none; color: #cf6679; font-size: 12px; text-decoration: underline; padding: 0; width: auto; font-weight: normal; }
     </style>
 </head>
@@ -70,14 +70,14 @@
 
     <div class="history-section">
         <div class="filter-box">
-            <label style="color: #bb86fc;">Rekap Berdasarkan Rentang:</label>
+            <label style="color: #bb86fc;">Rekap Rentang Tanggal:</label>
             <div style="display: flex; gap: 5px; margin-top: 5px;">
                 <input type="date" id="filter_dari" onchange="tampilkanHistory()">
                 <input type="date" id="filter_sampai" onchange="tampilkanHistory()">
             </div>
         </div>
 
-        <div class="recap-container" id="recap_display">
+        <div class="recap-container">
             <div class="recap-card">
                 <div class="recap-name">MAMAH YUGA</div>
                 <div class="recap-val" id="total_pax_yuga">0</div>
@@ -91,7 +91,7 @@
         </div>
 
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
-            <span style="font-weight: bold;">List History:</span>
+            <span style="font-weight: bold;">List History Detail:</span>
             <button class="btn-clear" onclick="hapusHistory()">Hapus Semua</button>
         </div>
         <div id="history_list"></div>
@@ -112,7 +112,6 @@
         return { yuga, emput, duitYuga, duitEmput, totalDuit };
     }
 
-    // Fungsi Gabungan: Kirim WA terus simpan
     function prosesLaporan() {
         const data = hitungTotal();
         if (data.yuga === 0 && data.emput === 0) {
@@ -120,15 +119,13 @@
             return;
         }
         
-        // Simpan ke histori dulu
         simpanLaporan(false);
         
-        // Kirim WA
         const tgl = document.getElementById('tgl_laporan').value.split('-').reverse().join('-');
         let teks = `Tanggal: ${tgl}\n`;
         teks += `--------------------------\n`;
-        teks += `Mamah Yuga: ${data.yuga} pax\n`;
-        teks += `Mamah Emput: ${data.emput} pax\n`;
+        teks += `Mamah Yuga: ${data.yuga}\n`;
+        teks += `Mamah Emput: ${data.emput}\n`;
         teks += `--------------------------`;
         
         window.open(`https://wa.me/?text=${encodeURIComponent(teks)}`, '_blank');
@@ -171,27 +168,32 @@
             const dalamRentang = (!fDari || !fSampai) || (item.tglRaw >= fDari && item.tglRaw <= fSampai);
             
             if (dalamRentang) {
-                // Tambah ke hitungan rekap
                 totalYugaPax += item.yuga;
                 totalYugaDuit += item.duitYuga;
                 totalEmputPax += item.emput;
                 totalEmputDuit += item.duitEmput;
 
-                // Tampil di list
                 container.innerHTML += `
                     <div class="history-item">
-                        <div class="history-date">${item.tgl}</div>
+                        <span class="history-date">${item.tgl}</span>
                         <div class="history-grid">
-                            <div>MAMAH YUGA:<br>${item.yuga} pax</div>
-                            <div>MAMAH EMPUT:<br>${item.emput} pax</div>
-                            <div class="total-line">Total: Rp${item.total.toLocaleString('id-ID')}</div>
+                            <div>
+                                <span style="color: #bb86fc;">MAMAH YUGA:</span><br>
+                                <span class="detail-pax">${item.yuga} pax</span>
+                                <span class="detail-duit">Rp${item.duitYuga.toLocaleString('id-ID')}</span>
+                            </div>
+                            <div>
+                                <span style="color: #bb86fc;">MAMAH EMPUT:</span><br>
+                                <span class="detail-pax">${item.emput} pax</span>
+                                <span class="detail-duit">Rp${item.duitEmput.toLocaleString('id-ID')}</span>
+                            </div>
+                            <div class="total-line">Total Hari Ini: Rp${item.total.toLocaleString('id-ID')}</div>
                         </div>
                     </div>
                 `;
             }
         });
 
-        // Update tampilan rekap di atas
         document.getElementById('total_pax_yuga').innerText = totalYugaPax + " Pax";
         document.getElementById('total_duit_yuga').innerText = "Rp" + totalYugaDuit.toLocaleString('id-ID');
         document.getElementById('total_pax_emput').innerText = totalEmputPax + " Pax";
