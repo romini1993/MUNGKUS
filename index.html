@@ -8,7 +8,7 @@
     <style>
         body { font-family: 'Segoe UI', sans-serif; margin: 0; padding: 15px; background: #121212; color: #e0e0e0; }
         .container { max-width: 500px; margin: auto; background: #1e1e1e; padding: 20px; border-radius: 15px; box-shadow: 0 4px 20px rgba(0,0,0,0.5); }
-        h2 { text-align: center; color: #bb86fc; margin-bottom: 20px; text-transform: uppercase; }
+        h2 { text-align: center; color: #bb86fc; margin-bottom: 20px; text-transform: uppercase; letter-spacing: 1px; }
         
         .form-group { background: #2d2d2d; padding: 15px; border-radius: 10px; margin-bottom: 15px; border-left: 5px solid #bb86fc; }
         label { font-weight: bold; display: block; margin-bottom: 5px; font-size: 14px; color: #b0b0b0; }
@@ -36,7 +36,6 @@
         .history-date { font-size: 12px; color: #03dac6; font-weight: bold; margin-bottom: 8px; display: block; }
         .history-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; font-size: 13px; }
 
-        /* Backup Section */
         .backup-box { background: #262626; border: 1px dashed #444; padding: 15px; border-radius: 10px; margin-top: 25px; text-align: center; }
         .backup-title { font-size: 12px; color: #b0b0b0; margin-bottom: 10px; display: block; }
         .btn-backup-alt { background: #444; color: white; padding: 8px 12px; font-size: 12px; margin: 5px; border-radius: 5px; }
@@ -119,7 +118,7 @@
 
 <script>
     const hargaPerPax = 500;
-    const STORAGE_KEY = 'hist_k'; // Kunci penyimpanan tetap
+    const STORAGE_KEY = 'hist_k';
     document.getElementById('tgl_laporan').valueAsDate = new Date();
 
     function getNamaHari(tglString) {
@@ -185,12 +184,22 @@
 
     function kirimHistoriWA() {
         const hist = JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
+        if (hist.length === 0) return alert("Gak ada data histori!");
+
         const fD = document.getElementById('f_dari').value;
         const fS = document.getElementById('f_sampai').value;
-        if (!fD || !fS) return alert("Pilih rentang tanggal dulu!");
 
-        let filtered = hist.filter(i => i.tglRaw >= fD && i.tglRaw <= fS).reverse();
-        if (filtered.length === 0) return alert("Data kosong di rentang ini!");
+        let filtered = hist;
+        let periodeTeks = "Semua Histori";
+
+        if (fD && fS) {
+            filtered = hist.filter(i => i.tglRaw >= fD && i.tglRaw <= fS).reverse();
+            periodeTeks = `${fD.split('-').reverse().join('-')} s/d ${fS.split('-').reverse().join('-')}`;
+        } else {
+            filtered = [...hist].reverse();
+        }
+
+        if (filtered.length === 0) return alert("Data kosong!");
 
         let ty=0, tdy=0, te=0, tde=0;
         let detYuga = "", detEmput = "";
@@ -202,7 +211,7 @@
         });
 
         let teks = `*REKAP LAPORAN*\n`;
-        teks += `Periode: ${fD.split('-').reverse().join('-')} s/d ${fS.split('-').reverse().join('-')}\n`;
+        teks += `Periode: ${periodeTeks}\n`;
         teks += `--------------------------\n`;
         teks += `*MAMAH YUGA*\n${detYuga}`;
         teks += `Total: ${ty}\nUpah: Rp${tdy.toLocaleString('id-ID')}\n\n`;
@@ -213,52 +222,54 @@
         window.open(`https://wa.me/?text=${encodeURIComponent(teks)}`, '_blank');
     }
 
-    // FUNGSI BACKUP (SIMPAN FILE)
     function backupData() {
         const data = localStorage.getItem(STORAGE_KEY);
-        if (!data || data === "[]") return alert("Gak ada data buat di-backup, Bro!");
+        if (!data || data === "[]") return alert("Gak ada data!");
         
-        const namaFile = prompt("Kasih nama file backup-nya:", "backup_laporan_kerupuk");
-        if (namaFile === null) return; // Batal jika user klik cancel
+        const now = new Date();
+        const thn = now.getFullYear();
+        const bln = String(now.getMonth() + 1).padStart(2, '0');
+        const tgl = String(now.getDate()).padStart(2, '0');
+        const jam = String(now.getHours()).padStart(2, '0');
+        const min = String(now.getMinutes()).padStart(2, '0');
+        const det = String(now.getSeconds()).padStart(2, '0');
+        const formatDefault = `Laporan_${thn}${bln}${tgl}_${jam}${min}${det}`;
+
+        const namaFile = prompt("Simpan backup dengan nama:", formatDefault);
+        if (namaFile === null) return; 
 
         const blob = new Blob([data], { type: "application/json" });
         const url = URL.createObjectURL(blob);
         const a = document.createElement("a");
         a.href = url;
-        a.download = `${namaFile || 'laporan'}.json`;
+        a.download = `${namaFile || formatDefault}.json`;
         document.body.appendChild(a);
         a.click();
         document.body.removeChild(a);
         URL.revokeObjectURL(url);
     }
 
-    // FUNGSI RESTORE (AMBIL FILE)
     function restoreData(event) {
         const file = event.target.files[0];
         if (!file) return;
-
         const reader = new FileReader();
         reader.onload = function(e) {
             try {
                 const importedData = JSON.parse(e.target.result);
                 if (Array.isArray(importedData)) {
-                    if (confirm("Data yang ada sekarang bakal diganti sama data dari file ini. Lanjut?")) {
+                    if (confirm("Ganti data sekarang dengan file backup ini?")) {
                         localStorage.setItem(STORAGE_KEY, JSON.stringify(importedData));
                         tampilkanHistory();
-                        alert("Data berhasil dibalikin, Bro!");
+                        alert("Data berhasil dipulihkan!");
                     }
-                } else {
-                    alert("Format file salah!");
                 }
-            } catch (err) {
-                alert("Gagal baca file. Pastiin filenya bener!");
-            }
+            } catch (err) { alert("File rusak!"); }
         };
         reader.readAsText(file);
-        event.target.value = ''; // Reset input file
+        event.target.value = '';
     }
 
-    function hapusHistory() { if(confirm("Hapus semua histori?")) { localStorage.removeItem(STORAGE_KEY); tampilkanHistory(); } }
+    function hapusHistory() { if(confirm("Hapus semua?")) { localStorage.removeItem(STORAGE_KEY); tampilkanHistory(); } }
     tampilkanHistory();
 </script>
 </body>
