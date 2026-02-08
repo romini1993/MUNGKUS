@@ -149,19 +149,31 @@
         const tgl = document.getElementById('tgl_laporan').value;
         const d = hitung();
         const item = { tglRaw: tgl, tgl: tgl.split('-').reverse().join('-'), hari: getNamaHari(tgl), y: d.y, e: d.e, dy: d.dy, de: d.de };
+        
         let hist = JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
-        hist.unshift(item);
+        
+        // Cari apa tanggal ini udah ada? Kalo ada, apus yang lama (supaya gak dobel pas update)
+        hist = hist.filter(h => h.tglRaw !== tgl);
+        
+        hist.push(item);
+        
+        // DISINI KUNCINYA: Urutin berdasarkan tglRaw (YYYY-MM-DD) biar rapi kalender
+        hist.sort((a, b) => a.tglRaw.localeCompare(b.tglRaw));
+        
         localStorage.setItem(STORAGE_KEY, JSON.stringify(hist));
         tampilkanHistory();
-        if(alertMode) alert("Histori Tersimpan!");
+        if(alertMode) alert("Histori Tersimpan & Diurutkan!");
     }
 
     function tampilkanHistory() {
-        const hist = JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
+        let hist = JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
         const fD = document.getElementById('f_dari').value;
         const fS = document.getElementById('f_sampai').value;
         const list = document.getElementById('history_list');
         let ty=0, tdy=0, te=0, tde=0;
+        
+        // Pastiin urut sebelum tampil
+        hist.sort((a, b) => a.tglRaw.localeCompare(b.tglRaw));
         
         list.innerHTML = '';
         hist.forEach(i => {
@@ -183,7 +195,7 @@
     }
 
     function kirimHistoriWA() {
-        const hist = JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
+        let hist = JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
         if (hist.length === 0) return alert("Gak ada data histori!");
 
         const fD = document.getElementById('f_dari').value;
@@ -193,11 +205,12 @@
         let periodeTeks = "Semua Histori";
 
         if (fD && fS) {
-            filtered = hist.filter(i => i.tglRaw >= fD && i.tglRaw <= fS).reverse();
+            filtered = hist.filter(i => i.tglRaw >= fD && i.tglRaw <= fS);
             periodeTeks = `${fD.split('-').reverse().join('-')} s/d ${fS.split('-').reverse().join('-')}`;
-        } else {
-            filtered = [...hist].reverse();
         }
+        
+        // Urutin dari tgl paling tua ke muda buat laporan
+        filtered.sort((a, b) => a.tglRaw.localeCompare(b.tglRaw));
 
         if (filtered.length === 0) return alert("Data kosong!");
 
@@ -270,6 +283,8 @@
     }
 
     function hapusHistory() { if(confirm("Hapus semua?")) { localStorage.removeItem(STORAGE_KEY); tampilkanHistory(); } }
+    
+    // Panggil tampilkanHistory pas awal buka biar urut
     tampilkanHistory();
 </script>
 </body>
