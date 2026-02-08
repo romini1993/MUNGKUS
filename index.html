@@ -18,11 +18,10 @@
         .total-box { background: #e7f3ff; padding: 15px; border-radius: 10px; text-align: center; margin-bottom: 20px; }
         .total-box span { font-size: 20px; font-weight: bold; color: #007bff; }
 
-        .btn-group { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-        button { padding: 12px; border-radius: 8px; border: none; font-weight: bold; cursor: pointer; font-size: 14px; transition: 0.3s; }
-        .btn-save { background: #007bff; color: white; grid-column: span 2; margin-bottom: 5px; }
+        .btn-group { display: flex; flex-direction: column; gap: 10px; }
+        button { padding: 12px; border-radius: 8px; border: none; font-weight: bold; cursor: pointer; font-size: 16px; transition: 0.3s; }
+        .btn-save { background: #007bff; color: white; }
         .btn-wa { background: #25d366; color: white; }
-        .btn-email { background: #dc3545; color: white; }
         button:active { transform: scale(0.98); }
 
         /* Style History */
@@ -31,7 +30,7 @@
         .history-item { background: white; padding: 12px; border-radius: 8px; margin-bottom: 10px; border: 1px solid #eee; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
         .history-date { font-size: 12px; color: #666; font-weight: bold; }
         .history-detail { font-size: 14px; margin-top: 5px; line-height: 1.5; }
-        .btn-clear { background: none; color: #ff4d4d; font-size: 12px; text-decoration: underline; padding: 0; width: auto; }
+        .btn-clear { background: none; color: #ff4d4d; font-size: 12px; text-decoration: underline; padding: 0; width: auto; font-weight: normal; }
     </style>
 </head>
 <body>
@@ -59,8 +58,7 @@
 
     <div class="btn-group">
         <button class="btn-save" onclick="simpanLaporan()">Simpan ke Histori</button>
-        <button class="btn-wa" onclick="kirimKe('wa')">WA Laporan</button>
-        <button class="btn-email" onclick="kirimKe('email')">Email Laporan</button>
+        <button class="btn-wa" onclick="kirimKeWA()">Kirim via WhatsApp</button>
     </div>
 
     <div class="history-section">
@@ -88,27 +86,27 @@
     }
 
     function simpanLaporan() {
-        const tgl = document.getElementById('tgl_laporan').value;
+        const tglInput = document.getElementById('tgl_laporan').value;
         const data = hitungTotal();
         
         if (data.yuga === 0 && data.emput === 0) {
-            alert("Isi dulu jumlah pax-nya, Bro!");
+            alert("Isi dulu pax-nya, Bro!");
             return;
         }
 
         const laporanBaru = {
-            tgl: tgl.split('-').reverse().join('-'), // format dd-mm-yyyy
+            tgl: tglInput.split('-').reverse().join('-'),
             yuga: data.yuga,
             emput: data.emput,
             total: data.totalDuit
         };
 
         let history = JSON.parse(localStorage.getItem('histori_kerupuk')) || [];
-        history.unshift(laporanBaru); // Tambah ke paling atas
+        history.unshift(laporanBaru);
         localStorage.setItem('histori_kerupuk', JSON.stringify(history));
         
         tampilkanHistory();
-        alert("Laporan kesimpen, Bro!");
+        alert("Sip, data masuk histori!");
     }
 
     function tampilkanHistory() {
@@ -130,40 +128,35 @@
         });
     }
 
-    function formatPesan() {
-        const tgl = document.getElementById('tgl_laporan').value;
+    function kirimKeWA() {
+        const tglInput = document.getElementById('tgl_laporan').value;
+        const tglFormatted = tglInput.split('-').reverse().join('-');
         const data = hitungTotal();
-        let teks = `*LAPORAN KERJA KERUPUK*\n`;
-        teks += `Tanggal: ${tgl.split('-').reverse().join('-')}\n`;
+        
+        if (data.yuga === 0 && data.emput === 0) {
+            alert("Isi dulu datanya baru kirim, Bro!");
+            return;
+        }
+
+        let teks = `Tanggal: ${tglFormatted}\n`;
         teks += `--------------------------\n`;
         teks += `Mamah Yuga: ${data.yuga} pax\n`;
         teks += `Mamah Emput: ${data.emput} pax\n`;
-        teks += `--------------------------\n`;
-        teks += `*Total Pendapatan: Rp${data.totalDuit.toLocaleString('id-ID')}*\n\n`;
-        teks += `Pokonya mantap!`;
-        return encodeURIComponent(teks);
-    }
-
-    function kirimKe(platform) {
-        const pesan = formatPesan();
-        if (platform === 'wa') {
-            window.open(`https://wa.me/?text=${pesan}`, '_blank');
-        } else {
-            window.location.href = `mailto:?subject=Laporan Kerja Kerupuk&body=${pesan}`;
-        }
+        teks += `--------------------------`;
+        
+        const linkWA = `https://wa.me/?text=${encodeURIComponent(teks)}`;
+        window.open(linkWA, '_blank');
     }
 
     function hapusHistory() {
-        if (confirm("Beneran mau hapus semua histori?")) {
+        if (confirm("Hapus semua histori nih?")) {
             localStorage.removeItem('histori_kerupuk');
             tampilkanHistory();
         }
     }
 
-    // Load history pas buka aplikasi
     tampilkanHistory();
 
-    // Registrasi Service Worker PWA
     if ('serviceWorker' in navigator) {
         window.addEventListener('load', () => {
             navigator.serviceWorker.register('./sw.js').catch(err => console.log('SW Gagal', err));
