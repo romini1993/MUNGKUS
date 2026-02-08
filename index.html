@@ -8,7 +8,7 @@
     <style>
         body { font-family: 'Segoe UI', sans-serif; margin: 0; padding: 15px; background: #121212; color: #e0e0e0; }
         .container { max-width: 500px; margin: auto; background: #1e1e1e; padding: 20px; border-radius: 15px; box-shadow: 0 4px 20px rgba(0,0,0,0.5); }
-        h2 { text-align: center; color: #bb86fc; margin-bottom: 20px; text-transform: uppercase; letter-spacing: 1px; }
+        h2 { text-align: center; color: #bb86fc; margin-bottom: 20px; text-transform: uppercase; }
         
         .form-group { background: #2d2d2d; padding: 15px; border-radius: 10px; margin-bottom: 15px; border-left: 5px solid #bb86fc; }
         label { font-weight: bold; display: block; margin-bottom: 5px; font-size: 14px; color: #b0b0b0; }
@@ -16,8 +16,8 @@
         
         .income-split { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px; }
         .income-card { background: #3700b3; padding: 15px; border-radius: 10px; text-align: center; border-bottom: 3px solid #03dac6; }
-        .income-card small { font-size: 11px; color: #bb86fc; font-weight: bold; text-transform: uppercase; }
-        .income-card div { font-size: 18px; font-weight: bold; margin-top: 5px; color: #fff; }
+        .income-card small { font-size: 10px; color: #bb86fc; font-weight: bold; text-transform: uppercase; }
+        .income-card div { font-size: 16px; font-weight: bold; margin-top: 5px; color: #fff; }
 
         .btn-group { display: flex; flex-direction: column; gap: 10px; }
         button { padding: 15px; border-radius: 8px; border: none; font-weight: bold; cursor: pointer; font-size: 16px; transition: 0.3s; }
@@ -31,8 +31,6 @@
         .recap-container { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px; }
         .recap-card { background: #333; padding: 12px; border-radius: 8px; text-align: center; border: 1px solid #444; }
         .recap-name { font-size: 11px; font-weight: bold; color: #bb86fc; margin-bottom: 5px; }
-        .recap-val { font-size: 16px; font-weight: bold; color: #fff; }
-        .recap-sub { font-size: 12px; color: #03dac6; font-weight: bold; margin-top: 3px; }
 
         .history-item { background: #252525; padding: 12px; border-radius: 8px; margin-bottom: 10px; border: 1px solid #333; }
         .history-date { font-size: 12px; color: #03dac6; font-weight: bold; margin-bottom: 8px; display: block; }
@@ -50,21 +48,21 @@
 
     <div class="form-group">
         <label>MAMAH YUGA</label>
-        <input type="number" id="pax_yuga" placeholder="Jumlah Pax" oninput="hitung()">
+        <input type="number" id="pax_yuga" placeholder="0" oninput="hitung()">
     </div>
 
     <div class="form-group">
         <label>MAMAH EMPUT</label>
-        <input type="number" id="pax_emput" placeholder="Jumlah Pax" oninput="hitung()">
+        <input type="number" id="pax_emput" placeholder="0" oninput="hitung()">
     </div>
 
     <div class="income-split">
         <div class="income-card">
-            <small>Pendapatan Yuga</small>
+            <small>MAMAH YUGA</small>
             <div id="disp_yuga">Rp0</div>
         </div>
         <div class="income-card">
-            <small>Pendapatan Emput</small>
+            <small>MAMAH EMPUT</small>
             <div id="disp_emput">Rp0</div>
         </div>
     </div>
@@ -76,7 +74,7 @@
 
     <div class="history-section">
         <div class="filter-box">
-            <label style="color: #bb86fc;">Rentang Rekap Histori:</label>
+            <label style="color: #bb86fc;">Pilih Rentang Laporan:</label>
             <div style="display: flex; gap: 5px; margin-top: 8px;">
                 <input type="date" id="f_dari" onchange="tampilkanHistory()">
                 <input type="date" id="f_sampai" onchange="tampilkanHistory()">
@@ -85,14 +83,14 @@
 
         <div class="recap-container">
             <div class="recap-card">
-                <div class="recap-name">TOTAL YUGA</div>
-                <div id="rec_pax_yuga" class="recap-val">0</div>
-                <div id="rec_duit_yuga" class="recap-sub">Rp0</div>
+                <div class="recap-name">TOTAL MAMAH YUGA</div>
+                <div id="rec_pax_yuga" style="font-weight:bold">0</div>
+                <div id="rec_duit_yuga" style="color:#03dac6; font-size:12px">Rp0</div>
             </div>
             <div class="recap-card">
-                <div class="recap-name">TOTAL EMPUT</div>
-                <div id="rec_pax_emput" class="recap-val">0</div>
-                <div id="rec_duit_emput" class="recap-sub">Rp0</div>
+                <div class="recap-name">TOTAL MAMAH EMPUT</div>
+                <div id="rec_pax_emput" style="font-weight:bold">0</div>
+                <div id="rec_duit_emput" style="color:#03dac6; font-size:12px">Rp0</div>
             </div>
         </div>
 
@@ -110,6 +108,11 @@
     const hargaPerPax = 500;
     document.getElementById('tgl_laporan').valueAsDate = new Date();
 
+    function getNamaHari(tglString) {
+        const hari = ["Minggu", "Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu"];
+        return hari[new Date(tglString).getDay()];
+    }
+
     function hitung() {
         const y = parseInt(document.getElementById('pax_yuga').value) || 0;
         const e = parseInt(document.getElementById('pax_emput').value) || 0;
@@ -122,7 +125,7 @@
 
     function prosesLaporan() {
         const d = hitung();
-        if (d.y === 0 && d.e === 0) return alert("Isi dulu, Bro!");
+        if (d.y === 0 && d.e === 0) return alert("Isi data dulu!");
         simpanLaporan(false);
         const tgl = document.getElementById('tgl_laporan').value.split('-').reverse().join('-');
         let teks = `Tanggal: ${tgl}\n--------------------------\nMamah Yuga: ${d.y}\nMamah Emput: ${d.e}\n--------------------------`;
@@ -132,7 +135,7 @@
     function simpanLaporan(alertMode) {
         const tgl = document.getElementById('tgl_laporan').value;
         const d = hitung();
-        const item = { tglRaw: tgl, tgl: tgl.split('-').reverse().join('-'), y: d.y, e: d.e, dy: d.dy, de: d.de };
+        const item = { tglRaw: tgl, tgl: tgl.split('-').reverse().join('-'), hari: getNamaHari(tgl), y: d.y, e: d.e, dy: d.dy, de: d.de };
         let hist = JSON.parse(localStorage.getItem('hist_k')) || [];
         hist.unshift(item);
         localStorage.setItem('hist_k', JSON.stringify(hist));
@@ -152,10 +155,10 @@
             if ((!fD || !fS) || (i.tglRaw >= fD && i.tglRaw <= fS)) {
                 ty+=i.y; tdy+=i.dy; te+=i.e; tde+=i.de;
                 list.innerHTML += `<div class="history-item">
-                    <span class="history-date">${i.tgl}</span>
+                    <span class="history-date">${i.hari}, ${i.tgl}</span>
                     <div class="history-grid">
-                        <div>YUGA: ${i.y}<br><span style="color:#03dac6">Rp${i.dy.toLocaleString('id-ID')}</span></div>
-                        <div>EMPUT: ${i.e}<br><span style="color:#03dac6">Rp${i.de.toLocaleString('id-ID')}</span></div>
+                        <div>MAMAH YUGA: ${i.y}<br><span style="color:#03dac6">Rp${i.dy.toLocaleString('id-ID')}</span></div>
+                        <div>MAMAH EMPUT: ${i.e}<br><span style="color:#03dac6">Rp${i.de.toLocaleString('id-ID')}</span></div>
                     </div>
                 </div>`;
             }
@@ -167,23 +170,36 @@
     }
 
     function kirimHistoriWA() {
-        const fD = document.getElementById('f_dari').value.split('-').reverse().join('-');
-        const fS = document.getElementById('f_sampai').value.split('-').reverse().join('-');
-        const ty = document.getElementById('rec_pax_yuga').innerText;
-        const tdy = document.getElementById('rec_duit_yuga').innerText;
-        const te = document.getElementById('rec_pax_emput').innerText;
-        const tde = document.getElementById('rec_duit_emput').innerText;
+        const hist = JSON.parse(localStorage.getItem('hist_k')) || [];
+        const fD = document.getElementById('f_dari').value;
+        const fS = document.getElementById('f_sampai').value;
+        if (!fD || !fS) return alert("Pilih rentang tanggal dulu, Bro!");
 
-        let teks = `*REKAP LAPORAN KERUPUK*\n`;
-        teks += `Periode: ${fD || '?'} s/d ${fS || '?'}\n`;
+        let filtered = hist.filter(i => i.tglRaw >= fD && i.tglRaw <= fS).reverse();
+        if (filtered.length === 0) return alert("Data kosong di rentang ini!");
+
+        let ty=0, tdy=0, te=0, tde=0;
+        let detYuga = "", detEmput = "";
+
+        filtered.forEach(i => {
+            ty+=i.y; tdy+=i.dy; te+=i.e; tde+=i.de;
+            if(i.y > 0) detYuga += `${i.hari}, ${i.tgl} dapat ${i.y}\n`;
+            if(i.e > 0) detEmput += `${i.hari}, ${i.tgl} dapat ${i.e}\n`;
+        });
+
+        let teks = `*REKAP LAPORAN*\n`;
+        teks += `Periode: ${fD.split('-').reverse().join('-')} s/d ${fS.split('-').reverse().join('-')}\n`;
         teks += `--------------------------\n`;
-        teks += `*MAMAH YUGA*\nTotal: ${ty}\nUpah: ${tdy}\n\n`;
-        teks += `*MAMAH EMPUT*\nTotal: ${te}\nUpah: ${tde}\n`;
+        teks += `*MAMAH YUGA*\n${detYuga}`;
+        teks += `Total: ${ty}\nUpah: Rp${tdy.toLocaleString('id-ID')}\n\n`;
+        teks += `*MAMAH EMPUT*\n${detEmput}`;
+        teks += `Total: ${te}\nUpah: Rp${tde.toLocaleString('id-ID')}\n`;
         teks += `--------------------------`;
+
         window.open(`https://wa.me/?text=${encodeURIComponent(teks)}`, '_blank');
     }
 
-    function hapusHistory() { if(confirm("Hapus semua histori?")) { localStorage.removeItem('hist_k'); tampilkanHistory(); } }
+    function hapusHistory() { if(confirm("Hapus semua?")) { localStorage.removeItem('hist_k'); tampilkanHistory(); } }
     tampilkanHistory();
 </script>
 </body>
