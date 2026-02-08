@@ -35,6 +35,12 @@
         .history-item { background: #252525; padding: 12px; border-radius: 8px; margin-bottom: 10px; border: 1px solid #333; }
         .history-date { font-size: 12px; color: #03dac6; font-weight: bold; margin-bottom: 8px; display: block; }
         .history-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; font-size: 13px; }
+
+        /* Backup Section */
+        .backup-box { background: #262626; border: 1px dashed #444; padding: 15px; border-radius: 10px; margin-top: 25px; text-align: center; }
+        .backup-title { font-size: 12px; color: #b0b0b0; margin-bottom: 10px; display: block; }
+        .btn-backup-alt { background: #444; color: white; padding: 8px 12px; font-size: 12px; margin: 5px; border-radius: 5px; }
+        
         .btn-clear { background: none; color: #cf6679; font-size: 12px; text-decoration: underline; padding: 0; width: auto; font-weight: normal; margin-top: 20px; }
     </style>
 </head>
@@ -98,6 +104,13 @@
         
         <button class="btn-wa-history" onclick="kirimHistoriWA()">Kirim Rekap Histori ke WA</button>
         
+        <div class="backup-box">
+            <span class="backup-title">KEAMANAN DATA (BACKUP)</span>
+            <button class="btn-backup-alt" onclick="backupData()">Simpan Data ke HP</button>
+            <button class="btn-backup-alt" onclick="document.getElementById('fileInput').click()">Ambil Data dari HP</button>
+            <input type="file" id="fileInput" style="display:none" onchange="restoreData(event)">
+        </div>
+
         <div style="text-align: center;">
             <button class="btn-clear" onclick="hapusHistory()">Hapus Semua Histori</button>
         </div>
@@ -106,6 +119,7 @@
 
 <script>
     const hargaPerPax = 500;
+    const STORAGE_KEY = 'hist_k'; // Kunci penyimpanan tetap
     document.getElementById('tgl_laporan').valueAsDate = new Date();
 
     function getNamaHari(tglString) {
@@ -136,15 +150,15 @@
         const tgl = document.getElementById('tgl_laporan').value;
         const d = hitung();
         const item = { tglRaw: tgl, tgl: tgl.split('-').reverse().join('-'), hari: getNamaHari(tgl), y: d.y, e: d.e, dy: d.dy, de: d.de };
-        let hist = JSON.parse(localStorage.getItem('hist_k')) || [];
+        let hist = JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
         hist.unshift(item);
-        localStorage.setItem('hist_k', JSON.stringify(hist));
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(hist));
         tampilkanHistory();
         if(alertMode) alert("Histori Tersimpan!");
     }
 
     function tampilkanHistory() {
-        const hist = JSON.parse(localStorage.getItem('hist_k')) || [];
+        const hist = JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
         const fD = document.getElementById('f_dari').value;
         const fS = document.getElementById('f_sampai').value;
         const list = document.getElementById('history_list');
@@ -170,10 +184,10 @@
     }
 
     function kirimHistoriWA() {
-        const hist = JSON.parse(localStorage.getItem('hist_k')) || [];
+        const hist = JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
         const fD = document.getElementById('f_dari').value;
         const fS = document.getElementById('f_sampai').value;
-        if (!fD || !fS) return alert("Pilih rentang tanggal dulu, Bro!");
+        if (!fD || !fS) return alert("Pilih rentang tanggal dulu!");
 
         let filtered = hist.filter(i => i.tglRaw >= fD && i.tglRaw <= fS).reverse();
         if (filtered.length === 0) return alert("Data kosong di rentang ini!");
@@ -199,7 +213,52 @@
         window.open(`https://wa.me/?text=${encodeURIComponent(teks)}`, '_blank');
     }
 
-    function hapusHistory() { if(confirm("Hapus semua?")) { localStorage.removeItem('hist_k'); tampilkanHistory(); } }
+    // FUNGSI BACKUP (SIMPAN FILE)
+    function backupData() {
+        const data = localStorage.getItem(STORAGE_KEY);
+        if (!data || data === "[]") return alert("Gak ada data buat di-backup, Bro!");
+        
+        const namaFile = prompt("Kasih nama file backup-nya:", "backup_laporan_kerupuk");
+        if (namaFile === null) return; // Batal jika user klik cancel
+
+        const blob = new Blob([data], { type: "application/json" });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = `${namaFile || 'laporan'}.json`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+    }
+
+    // FUNGSI RESTORE (AMBIL FILE)
+    function restoreData(event) {
+        const file = event.target.files[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            try {
+                const importedData = JSON.parse(e.target.result);
+                if (Array.isArray(importedData)) {
+                    if (confirm("Data yang ada sekarang bakal diganti sama data dari file ini. Lanjut?")) {
+                        localStorage.setItem(STORAGE_KEY, JSON.stringify(importedData));
+                        tampilkanHistory();
+                        alert("Data berhasil dibalikin, Bro!");
+                    }
+                } else {
+                    alert("Format file salah!");
+                }
+            } catch (err) {
+                alert("Gagal baca file. Pastiin filenya bener!");
+            }
+        };
+        reader.readAsText(file);
+        event.target.value = ''; // Reset input file
+    }
+
+    function hapusHistory() { if(confirm("Hapus semua histori?")) { localStorage.removeItem(STORAGE_KEY); tampilkanHistory(); } }
     tampilkanHistory();
 </script>
 </body>
